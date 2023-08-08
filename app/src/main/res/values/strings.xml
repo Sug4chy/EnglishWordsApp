@@ -4,4 +4,7 @@
     <string name="title_correct">Correct!</string>
     <string name="title_wrong">Wrong!</string>
     <string name="button_continue">Continue</string>
+    <string name="try_again">Try again</string>
+    <string name="thats_all">That\'s all!</string>
+    <string name="a1" translatable="false">A1</string>
 </resources>

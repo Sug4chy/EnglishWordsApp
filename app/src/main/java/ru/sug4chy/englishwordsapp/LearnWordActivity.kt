@@ -1,5 +1,6 @@
 package ru.sug4chy.englishwordsapp
 
+import android.content.Intent
 import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -9,21 +10,34 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.children
+import kotlin.random.Random
 
 class LearnWordActivity : AppCompatActivity() {
+
+    private var wordsWithTranslation: MutableMap<String, String> = mutableMapOf()
+
+    private val alreadyUsedWords = mutableListOf<String>()
+
+    private var iterationsCount = 10
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        val words = intent.getStringArrayExtra("words")!!
+        val translations = intent.getStringArrayExtra("translations")!!
+        for (i in words.indices) {
+            wordsWithTranslation[words[i]] = translations[i]
+        }
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_learn_word)
+        generateWordAndVariants()
     }
 
     //дан верный ответ
-    fun onCorrectAnswerChoose(view: View) {
+    private fun onCorrectAnswerChoose(view: View) {
         onAnswerChoose(true)
         lightCorrectAnswer(view)
     }
 
     //дан неверный ответ
-    fun onWrongAnswerChoose(view: View) {
+    private fun onWrongAnswerChoose(view: View) {
         onAnswerChoose(false)
         lightWrongAnswer(view)
     }
@@ -47,7 +61,7 @@ class LearnWordActivity : AppCompatActivity() {
 
     //подсвечивает верный вариант ответа
     private fun lightCorrectAnswer(correctVariant: View) {
-        turnOffLightness(correctVariant)
+        turnOffLightness()
         val layout = correctVariant as LinearLayout
         layout.setBackgroundResource(R.drawable.shape_correct_layout_lighted)
 
@@ -61,7 +75,7 @@ class LearnWordActivity : AppCompatActivity() {
 
     //подсвечивает неверный вариант ответа
     private fun lightWrongAnswer(variant: View) {
-        turnOffLightness(variant)
+        turnOffLightness()
         val layout = variant as LinearLayout
         layout.setBackgroundResource(R.drawable.shape_wrong_layout_lighted)
 
@@ -74,8 +88,8 @@ class LearnWordActivity : AppCompatActivity() {
     }
 
     //выключает подсветку на всех вариантах ответа
-    private fun turnOffLightness(variant: View) {
-        val layout = variant.parent as LinearLayout
+    private fun turnOffLightness() {
+        val layout: LinearLayout = findViewById(R.id.linearLayout)
         layout.children.forEach {
             val variantLayout = it as LinearLayout
             variantLayout.setBackgroundResource(R.drawable.shape_rounded_containers)
@@ -92,5 +106,62 @@ class LearnWordActivity : AppCompatActivity() {
     //возврат к дефолтному состоянию визуала
     fun onVisualReset(view: View) {
         setContentView(R.layout.activity_learn_word)
+    }
+
+    fun onContinueButtonClicked(view: View) {
+        if (--iterationsCount > 0) {
+            generateWordAndVariants()
+        } else {
+            val intent = Intent(this, EndActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    private fun generateWordAndVariants() {
+        val index = Random.nextInt(wordsWithTranslation.size)
+
+        setContentView(R.layout.activity_learn_word)
+
+        val textViewWithWord: TextView = findViewById(R.id.textView2)
+        var key = wordsWithTranslation.keys.elementAt(index)
+
+        if (key in alreadyUsedWords) {
+            key = wordsWithTranslation.keys.first { it !in alreadyUsedWords }
+        }
+
+        textViewWithWord.text = key
+
+        val correctAnswerIndex = Random.nextInt(0, 4)
+
+        val allVariantsLayout: LinearLayout = findViewById(R.id.linearLayout)
+        val correctVariant = allVariantsLayout.children.elementAt(correctAnswerIndex) as LinearLayout
+        correctVariant.setOnClickListener(::onCorrectAnswerChoose)
+
+        val textViewWithCorrectVariant = correctVariant.children.elementAt(1) as TextView
+        val value = wordsWithTranslation.remove(key)
+        alreadyUsedWords.add(key)
+        textViewWithCorrectVariant.text = value
+
+        for (variant in allVariantsLayout.children) {
+            if (variant == correctVariant) {
+                continue
+            }
+            val randomIndex = Random.nextInt(wordsWithTranslation.size)
+            val variantLayout = variant as LinearLayout
+            variantLayout.setOnClickListener(::onWrongAnswerChoose)
+            val textViewWithVariant = variantLayout.children.elementAt(1) as TextView
+            textViewWithVariant.text = wordsWithTranslation.values.elementAt(randomIndex)
+        }
+
+        value?.let { wordsWithTranslation[key] = it }
+    }
+
+    fun onWrongContinueButtonClicked(view: View) {
+        turnOffLightness()
+        val skipButton: Button = findViewById(R.id.skip_button)
+        skipButton.visibility = View.VISIBLE
+
+        val wrongResultLayout = view.parent as ConstraintLayout
+        wrongResultLayout.visibility = View.GONE
     }
 }

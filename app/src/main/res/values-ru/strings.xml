@@ -4,4 +4,6 @@
     <string name="title_correct">Верно!</string>
     <string name="title_wrong">Ошибка!</string>
     <string name="button_continue">Продолжить</string>
+    <string name="try_again">Повторить</string>
+    <string name="thats_all">Всё!</string>
 </resources>
