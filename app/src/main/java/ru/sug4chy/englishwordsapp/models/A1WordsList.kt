@@ -1,8 +1,7 @@
 package ru.sug4chy.englishwordsapp.models
 
-class A1WordsList : WordsList() {
-
-    override val words = arrayOf(
+class A1WordsList{
+    val words = arrayOf(
         "To be",
         "To do",
         "To feel",
@@ -18,7 +17,7 @@ class A1WordsList : WordsList() {
         "Red",
     )
 
-    override val translations = arrayOf(
+    val translations = arrayOf(
         "Быть",
         "Делать",
         "Чувствовать",
